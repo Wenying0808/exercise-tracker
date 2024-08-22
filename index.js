@@ -5,18 +5,28 @@ require('dotenv').config()
 const mongoose = require('mongoose');
 
 //connect to mongoose
-mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(()=>{console.log('connected')})
+mongoose.connect(process.env.MONGO_URL)
+.then(()=>{console.log('Connected to MongoDB!')})
+
+const userSchema = new mongoose.Schema({
+  username: String
+});
+User = mongoose.model('User', userSchema);
 
 app.use(cors())
 app.use(express.static('public'))
+//add middleware
+app.use(express.urlencoded({ extended: true }))
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
-const userSchema = new mongoose.Schema({
 
-});
-
+app.post('/api/users', (req, res) => {
+  const name = req.body.username;
+  res.json({
+    username: name
+  })
+})
 
 
 
