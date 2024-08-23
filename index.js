@@ -12,7 +12,15 @@ mongoose.connect(process.env.MONGO_URL)
 const userSchema = new mongoose.Schema({
   username: String
 });
-User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+const exerciseSchema = new mongoose.Schema({
+  user_id: { type: String, required: true },
+  description: String,
+  duration: Number,
+  date: Date,
+});
+const Exercise = mongoose.model('Exercise', exerciseSchema);
 
 app.use(cors())
 app.use(express.static('public'))
@@ -33,10 +41,41 @@ app.post('/api/users', async(req, res) => {
     const savedUser = await newUser.save();
 
     res.json({
-      username: savedUser.username
+      username: savedUser.username,
+      _id: savedUser._id,
     })
   } catch (err) {
     console.error("Error save new user", err)
+  }
+})
+
+app.post('/api/users/:_id/exercises', async(req, res) => {
+
+  const userId = req.params._id;
+  const description = req.body.description;
+  const duration = req.body.duration;
+  const date = req.body.date;
+
+  try {
+    // find the user name in db
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.json({
+        error: 'User not found'
+      })
+    } else {
+      const username = user.username;
+      res.json({
+        username: username,
+        description: description,
+        duration: duration,
+        date: date,
+        _id: userId,
+      })
+    }
+
+  } catch (err){
+    console.error("Error find user name by id", err)
   }
 })
 
