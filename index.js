@@ -54,7 +54,7 @@ app.post('/api/users/:_id/exercises', async(req, res) => {
   const userId = req.params._id;
   const description = req.body.description;
   const duration = req.body.duration;
-  const date = req.body.date;
+  const date = req.body.date ? new Date(req.body.date) : new Date();
 
   try {
     // find the user name in db
@@ -64,18 +64,26 @@ app.post('/api/users/:_id/exercises', async(req, res) => {
         error: 'User not found'
       })
     } else {
-      const username = user.username;
-      res.json({
-        username: username,
+      // create new instance of the exercise model
+      const newExercise = new Exercise({
+        user_id: user._id,
         description: description,
         duration: duration,
         date: date,
-        _id: userId,
+      });
+      // save to db
+      const savedExercise = await newExercise.save();
+      res.json({
+        username: user.username,
+        description: savedExercise.description,
+        duration: savedExercise.duration,
+        date: savedExercise.date.toDateString(),
+        _id: user._id,
       })
     }
 
   } catch (err){
-    console.error("Error find user name by id", err)
+    console.error("Error saving new exercise", err)
   }
 })
 
