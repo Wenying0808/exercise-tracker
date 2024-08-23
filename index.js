@@ -107,10 +107,16 @@ app.get('/api/users/:_id/logs', async(req, res) => {
   } 
   const exercises = await Exercise.find({ user_id: userId });
   console.log(exercises);
+  const logs = exercises.map((exercise) => ({
+    description: exercise.description,
+    duration: exercise.duration,
+    date: exercise.date.toDateString(),
+  }))
   res.json({
     username: user.username,
     count: exercises.length,
     _id: user._id,
+    log: logs,
   });
 });
 
