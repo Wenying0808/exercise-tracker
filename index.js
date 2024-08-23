@@ -38,6 +38,7 @@ app.get('/api/users', async(req, res) => {
     console.error("Error fetching user list from db", err)
   }
 });
+
 app.post('/api/users', async(req, res) => {
   const name = req.body.username;
   
@@ -55,7 +56,7 @@ app.post('/api/users', async(req, res) => {
   } catch (err) {
     console.error("Error saving new user", err)
   }
-})
+});
 
 app.post('/api/users/:_id/exercises', async(req, res) => {
 
@@ -93,9 +94,25 @@ app.post('/api/users/:_id/exercises', async(req, res) => {
   } catch (err){
     console.error("Error saving new exercise", err)
   }
-})
+});
 
-
+app.get('/api/users/:_id/logs', async(req, res) => {
+  // use id to find the exercises
+  console.log(req.params)
+  const userId = req.params._id;
+  const user = await User.findById(userId);
+  if (!user) {
+    res.send("user not found");
+    return;
+  } 
+  const exercises = await Exercise.find({ user_id: userId });
+  console.log(exercises);
+  res.json({
+    username: user.username,
+    count: exercises.length,
+    _id: user._id,
+  });
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
