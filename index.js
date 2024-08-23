@@ -30,6 +30,14 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+app.get('/api/users', async(req, res) => {
+  try{
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching user list from db", err)
+  }
+});
 app.post('/api/users', async(req, res) => {
   const name = req.body.username;
   
@@ -45,7 +53,7 @@ app.post('/api/users', async(req, res) => {
       _id: savedUser._id,
     })
   } catch (err) {
-    console.error("Error save new user", err)
+    console.error("Error saving new user", err)
   }
 })
 
