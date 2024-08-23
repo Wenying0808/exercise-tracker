@@ -98,26 +98,60 @@ app.post('/api/users/:_id/exercises', async(req, res) => {
 
 app.get('/api/users/:_id/logs', async(req, res) => {
   // use id to find the exercises
-  console.log(req.params)
+  /*console.log(req.params)*/
   const userId = req.params._id;
   const user = await User.findById(userId);
   if (!user) {
     res.send("user not found");
     return;
   } 
-  const exercises = await Exercise.find({ user_id: userId });
-  console.log(exercises);
-  const logs = exercises.map((exercise) => ({
-    description: exercise.description,
-    duration: exercise.duration,
-    date: exercise.date.toDateString(),
+
+  // Extract query parameters
+  const { from, to, limit } = req.query;
+
+  // no date filter by default
+  let dateFilterObj = {};
+  // if 'from' presents
+  if (from) {
+    dateFilterObj["$gte"] = new Date (from)
+  };
+  if (to) {
+    dateFilterObj["$lte"] = new Date (to)
+  };
+
+  let filter = {
+    user_id: userId
+  };
+
+  // add date filter if 'from' or 'to' exists
+  if ( from || to ) {
+    filter.date = dateFilterObj
+  }
+
+  let exercisesQuery = Exercise.find(filter);
+
+  if (limit) {
+    exercisesQuery = exercisesQuery.limit(parseInt(limit));
+  }
+
+  // Execute query
+  const exercises = await exercisesQuery;
+
+  /*console.log(exercises);*/
+
+  const logs = exercises.map((e) => ({
+    description: e.description,
+    duration: e.duration,
+    date: e.date.toDateString(),
   }))
+
   res.json({
     username: user.username,
     count: exercises.length,
     _id: user._id,
     log: logs,
   });
+
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
